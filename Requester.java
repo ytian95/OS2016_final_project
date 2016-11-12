@@ -46,6 +46,7 @@ public class Requester{
                     System.out.println("server>" + message);
                     message = "bye";
                     sendMessage(message);*/
+            stdIn.close();
         }
         catch(Exception e){
             System.err.println("data received in unknown format");
