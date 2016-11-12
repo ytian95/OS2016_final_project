@@ -12,64 +12,53 @@ import java.net.Socket;
 public class Server implements Runnable {
     private int port;
     Socket connectionSocket;
+    Set ports = Collections.synchronizedSet(new HashSet<Integer>());
 
     public Server(Socket socket) {
-	port = socket.getLocalPort();
-	System.out.println("Port:" + port);
-	connectionSocket = socket;
+        port = socket.getLocalPort();
+        System.out.println("Port:" + port);
+        connectionSocket = socket;
     }
     
     public void run() {
-	try {
-	    BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-	    DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
-	    http_handler(input, output);
-	} catch (IOException e) {
-	    System.out.println(e.getMessage());
-	}
+        try {
+            BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
+            http_handler(input, output);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
  
-    private void http_handler(BufferedReader input, DataOutputStream output) {
-	//Two types of request we can handle:
-	//GET /index.html HTTP/1.0
-	//HEAD /index.html HTTP/1.0
-	String path = new String(); 
-	try {
-	    String tmp = input.readLine(); 
-	    System.out.println("read: "+tmp);
-	    String tmp2 = new String(tmp);
-	    tmp.toUpperCase(); 
-	    int start = 0;
-	    int end = 0;
-	    for (int a = 0; a < tmp2.length(); a++) {
-		if (tmp2.charAt(a) == ' ' && start != 0) {
-		    end = a;
-		    break;
+    private void httpHandler(BufferedReader input, DataOutputStream output) {
+		//Two types of request we can handle:
+		//GET /index.html HTTP/1.0
+		//HEAD /index.html HTTP/1.0
+		String path = "";
+		
+		try {
+			String[] request = input.readLine().split(" ");
+			
+			path = request[1].substring(1);
+			output.writeBytes(construct_http_header(200, 5));
+			BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+			System.out.println("path opening: " + path);
+			
+			String line="";
+			while ((line=br.readLine())!=null) {
+				output.writeUTF(line);
+				System.out.println("line: "+line);
+			}
+			output.writeUTF("requested file name :"+path);
+			output.close(); 
+			br.close();
 		}
-		if (tmp2.charAt(a) == ' ' && start == 0) {
-		    start = a;
+		catch (IOException e) {
+			e.printStackTrace();
 		}
-	    }
-	    path = tmp2.substring(start + 2, end); //fill in the path
-	    output.writeBytes(construct_http_header(200, 5));
-	    BufferedReader br = new BufferedReader(new FileReader(new File(path)));
-	    System.out.println("openning file"+path);
-	    String line="";
-	    while((line=br.readLine())!=null){
-		output.writeUTF(line);
-		System.out.println("line: "+line);
-	    }
-	    output.writeUTF("requested file name :"+path);
-	    output.writeUTF("hello world");
-	    output.close(); 
-	    br.close();
 	}
-	catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
 
-    private String construct_http_header(int return_code, int file_type) {
+    private String constructHttpHeader(int return_code, int file_type) {
 	String s = "HTTP/1.0 ";
 	switch (return_code) {
 	case 200:
@@ -122,6 +111,7 @@ public class Server implements Runnable {
 	try {
 	    System.out.println("Trying to bind to localhost on port 1234...");
 	    serverSocket = new ServerSocket(1234);
+        ports.add(1234);
 	    System.out.println("Listening");
 	} catch(Exception e) { //catch any errors and print errors to gui
 	    System.out.println("\nFatal Error:" + e.getMessage());
@@ -130,13 +120,23 @@ public class Server implements Runnable {
 	while (true) {
 	    System.out.println("\nReady, Waiting for requests...\n");
 	    try {
-		Socket socket = serverSocket.accept();
-		System.out.println("Connected");
-		new Thread(new Server(socket)).start();
-		InetAddress client = socket.getInetAddress();
-		System.out.println(client.getHostName() + " connected to server.\n");
+            Socket socket = serverSocket.accept();
+            System.out.println("Connected");
+            
+            Random r = new Random();
+            int newPort = r.nextInt() % 10000 + 40000;
+            while (ports.contain(newPort)){
+                newPort = r.nextInt() % 10000 + 40000;
+            }
+            ports.add(newPort);
+            System.out.println("random port: " + newPort);
+            
+            new Thread(new Server(new serverSocket(newPort).accept())).start();
+                        
+            InetAddress client = socket.getInetAddress();
+            System.out.println(client.getHostName() + " connected to server.\n");
 	    } catch (Exception e) { 
-		System.out.println("\nError:" + e.getMessage());
+            System.out.println("\nError:" + e.getMessage());
 	    }
 	}
     }
