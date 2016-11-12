@@ -12,11 +12,12 @@ import java.net.Socket;
 public class Server implements Runnable {
     private int port;
     Socket connectionSocket;
+    Set ports = Collections.synchronizedSet(new HashSet<Integer>());
 
     public Server(Socket socket) {
-	port = socket.getLocalPort();
-	System.out.println("Port:" + port);
-	connectionSocket = socket;
+        port = socket.getLocalPort();
+        System.out.println("Port:" + port);
+        connectionSocket = socket;
     }
     
     public void run() {
