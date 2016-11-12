@@ -45,27 +45,10 @@ public class Server {
 		//Two types of request we can handle:
 		//GET /index.html HTTP/1.0
 		//HEAD /index.html HTTP/1.0
-		int method = 0; //1 get, 2 head, 0 not supported
-		String http = new String(); 
-		String path = new String(); 
-		String file = new String(); 
-		String user_agent = new String();
+		String path = "";
 		
 		try {
 			String[] request = input.readLine().split(" ");
-			String header = request[0].toUpperCase();
-			switch(header) {
-				case "GET":
-					method = 1;
-					break;
-				case "HEAD":
-					method = 2;
-					break;
-				default:
-					System.out.println("Unsupported header");
-					method = 0;
-					break;
-			}
 			
 			path = request[1].substring(1);
 			output.writeBytes(construct_http_header(200, 5));
