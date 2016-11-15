@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 
 public class Server implements Runnable {
     private int port;
-    Socket connectionSocket;
-    Set ports = Collections.synchronizedSet(new HashSet<Integer>());
+    private Socket connectionSocket;
+    private static Set ports = Collections.synchronizedSet(new HashSet<Integer>());
 
     public Server(Socket socket) {
         port = socket.getLocalPort();
@@ -24,7 +25,7 @@ public class Server implements Runnable {
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
-            http_handler(input, output);
+            httpHandler(input, output);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -40,7 +41,7 @@ public class Server implements Runnable {
 			String[] request = input.readLine().split(" ");
 			
 			path = request[1].substring(1);
-			output.writeBytes(construct_http_header(200, 5));
+			output.writeBytes(constructHttpHeader(200, 5));
 			BufferedReader br = new BufferedReader(new FileReader(new File(path)));
 			System.out.println("path opening: " + path);
 			
@@ -125,13 +126,13 @@ public class Server implements Runnable {
             
             Random r = new Random();
             int newPort = r.nextInt() % 10000 + 40000;
-            while (ports.contain(newPort)){
+            while (ports.contains(newPort)){
                 newPort = r.nextInt() % 10000 + 40000;
             }
             ports.add(newPort);
             System.out.println("random port: " + newPort);
             
-            new Thread(new Server(new serverSocket(newPort).accept())).start();
+            new Thread(new Server(new ServerSocket(newPort).accept())).start();
                         
             InetAddress client = socket.getInetAddress();
             System.out.println(client.getHostName() + " connected to server.\n");
