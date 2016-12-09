@@ -49,23 +49,24 @@ public class Server implements Runnable {
 			output.writeBytes(constructHttpHeader(200, 5));
 			// Block with semaphore for later when have writer
 			reader.acquire();
-			BufferedReader br = new BufferedReader(new FileReader(new File(path)));
-			
-			System.out.println("path opening: " + path);
-			
-			String line="";
-			while ((line=br.readLine())!=null) {
-				output.writeUTF(line);
-				System.out.println("line: "+line);
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+				
+				System.out.println("path opening: " + path);
+				
+				String line="";
+				while ((line=br.readLine())!=null) {
+					output.writeUTF(line);
+					System.out.println("line: "+line);
+				}
+				output.writeUTF("requested file name :"+path);
+				br.close();
+			} finally {
+				reader.release();
 			}
-			output.writeUTF("requested file name :"+path);
-			
-			br.close();
 			output.close();
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
-		} finally {
-			reader.release();
 		}
 	}
 
