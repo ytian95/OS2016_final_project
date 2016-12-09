@@ -13,7 +13,7 @@ import java.util.*;
 public class Server implements Runnable {
     private int port;
     private Socket connectionSocket;
-    private static Set ports = Collections.synchronizedSet(new HashSet<Integer>());
+    private static Set<Integer> ports = Collections.synchronizedSet(new HashSet<Integer>());
 
     public Server(Socket socket) {
         port = socket.getLocalPort();
