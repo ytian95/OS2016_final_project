@@ -59,15 +59,13 @@ public class Server implements Runnable {
 				System.out.println("line: "+line);
 			}
 			output.writeUTF("requested file name :"+path);
-			output.close(); 
+			
 			br.close();
+			output.close();
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		} finally {
 			reader.release();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
