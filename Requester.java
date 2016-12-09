@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
-public class Requester{
+public class Requester implements Runnable{
     Socket requestSocket;
     ObjectOutputStream out;
     ObjectInputStream in;
@@ -11,28 +11,34 @@ public class Requester{
     
     public void run() {
 	//1. creating a socket to connect to the server
-	try{
+        try {
             requestSocket = new Socket("localhost", port);
             System.out.println("Connected to localhost in port" + port);
-	    PrintWriter out = new PrintWriter(requestSocket.getOutputStream(), true);
-	    BufferedReader in = new BufferedReader(new InputStreamReader(requestSocket.getInputStream()));
-	    Scanner stdIn = new Scanner(System.in);
-	    String fromUser = "GET /try.html HTTP/1.1";
-	    if (fromUser != null) {
-		System.out.println("Client: " + fromUser);
-		out.println(fromUser);
-	    }
-	    String line;
-	    while ((line = in.readLine()) !=null) {
-		System.out.println(line);
-	    }
-	    stdIn.close();
-    
-
-	} catch(Exception e){
-	    System.err.println("data received in unknown format");
-	    e.printStackTrace();
-	}
+            PrintWriter out = new PrintWriter(requestSocket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(requestSocket.getInputStream()));
+            Scanner stdIn = new Scanner(System.in);
+            System.out.println("connected to server, expecting new port number");
+            String line="some predefined msg";
+            line = in.readLine();
+            System.out.println(line);
+            int newPort = Integer.parseInt(line.substring(line.indexOf(":")+2));
+            requestSocket = new Socket("localhost", newPort);
+            System.out.println("Connected to localhost in port " + newPort);
+            out = new PrintWriter(requestSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(requestSocket.getInputStream()));
+            String fromUser = "GET /try.html HTTP/1.1";
+            if (fromUser != null) {
+                System.out.println("Client: " + fromUser);
+                out.println(fromUser);
+            }
+            while ((line = in.readLine()) !=null) {
+                System.out.println(line);
+            }
+            stdIn.close();
+        } catch(Exception e){
+            System.err.println("data received in unknown format");
+            e.printStackTrace();
+        }
     }
     
     public void sendMessage(String msg) {
@@ -46,7 +52,14 @@ public class Requester{
     }
     
     public static void main(String args[]) {
-        Requester client = new Requester();
-        client.run();
+	if (args.length == 0) {
+	    Requester client = new Requester();
+	    client.run();
+	} else {
+	    int numberOfClients = Integer.valueOf(args[0]);
+	    for (int i=0; i<numberOfClients; i++) {
+	        new Thread(new Requester()).start();
+	    }
+	}
     }
 }
