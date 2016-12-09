@@ -9,12 +9,15 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Server implements Runnable {
     private int port;
     private Socket connectionSocket;
-    private static Set ports = Collections.synchronizedSet(new HashSet<Integer>());
-
+    private static Set<Integer> ports = Collections.synchronizedSet(new HashSet<Integer>());
+    // Restricts access to only 1 reader a a time
+    private static Semaphore reader = new Semaphore(1);
+    
     public Server(Socket socket) {
         port = socket.getLocalPort();
         System.out.println("Port:" + port);
@@ -35,6 +38,8 @@ public class Server implements Runnable {
 		//Two types of request we can handle:
 		//GET /index.html HTTP/1.0
 		//HEAD /index.html HTTP/1.0
+    	//POST /index.html
+    	//POST Handles writers
 		String path = "";
 		
 		try {
@@ -42,7 +47,10 @@ public class Server implements Runnable {
 			
 			path = request[1].substring(1);
 			output.writeBytes(constructHttpHeader(200, 5));
+			// Block with semaphore for later when have writer
+			reader.acquire();
 			BufferedReader br = new BufferedReader(new FileReader(new File(path)));
+			
 			System.out.println("path opening: " + path);
 			
 			String line="";
@@ -53,8 +61,12 @@ public class Server implements Runnable {
 			output.writeUTF("requested file name :"+path);
 			output.close(); 
 			br.close();
+			reader.release();
 		}
 		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -124,6 +136,7 @@ public class Server implements Runnable {
             Socket socket = serverSocket.accept();
             System.out.println("Connected");
             
+            // Handshaking part
             Random r = new Random();
             int newPort = r.nextInt() % 10000 + 40000;
             while (ports.contains(newPort)){
@@ -131,7 +144,9 @@ public class Server implements Runnable {
             }
             ports.add(newPort);
             System.out.println("random port: " + newPort);
-            
+            //Connect to socket, and the reopen with new socket 1234
+            // new socket 1234 should be in constructor- b/c stick in new thread.
+            //The newport number is running on the old thread
             new Thread(new Server(new ServerSocket(newPort).accept())).start();
                         
             InetAddress client = socket.getInetAddress();

@@ -39,7 +39,11 @@ public class Requester{
             while((line =in.readLine())!=null){
                 System.out.println(line);
             }
-
+            // Get the prot number
+            //requestSocket.close()
+            //RequestSocket = new Socket("localhost", newPoerNumber);
+            //Then receive another message
+            // FromUser = "GET /try.html HTTP.1.1"
             // System.out.println("sending :GET /try.html HTTP/1.0 ");
                   /*  sendMessage("GET /try.html HTTP/1.1");
                      message = (String)in.readObject();
