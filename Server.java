@@ -195,6 +195,18 @@ public class Server implements Runnable {
 	}
 
 	public static void main(String args[]){
+		boolean run = false;
+	    	while (!run) {
+			String input = System.console().readLine();
+			if (input.equals("start")) {
+			run = true;
+		} else {
+			System.out.println("Invalid input. To start server, enter 'start'");
+		}
+	    }
+		
 		new Thread(new Server(1234)).start();	
 	}
-} 
+} 		
+output.close();		
+output.close();
