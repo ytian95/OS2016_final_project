@@ -195,18 +195,31 @@ public class Server implements Runnable {
 	}
 
 	public static void main(String args[]){
-		boolean run = false;
-	    	while (!run) {
-			String input = System.console().readLine();
-			if (input.equals("start")) {
+	    boolean run = false;
+	    
+	    while (true) {
+		Thread t = new Thread(new Server(1234));
+		while (!run) {
+		    String input = System.console().readLine();
+		    if (input.equals("start")) {
+			System.out.println("Starting server");
 			run = true;
-		} else {
+			t.start();
+		    } else {
 			System.out.println("Invalid input. To start server, enter 'start'");
+		    }
+		}
+		
+		while (run) {
+		    String input = System.console().readLine();
+		    if (input.equals("stop")) {
+			System.out.println("Stopping server");
+			t.interrupt();
+			run = false;
+		    } else {
+			System.out.println("Invalid input. To stop server, enter 'stop'");
+		    }
 		}
 	    }
-		
-		new Thread(new Server(1234)).start();	
 	}
 } 		
-output.close();		
-output.close();
