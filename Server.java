@@ -142,37 +142,37 @@ public class Server implements Runnable {
     @SuppressWarnings("resource")
     public void run() {
 
-	try {
-	    System.out.println("Trying to bind to localhost on port " + port);
-	    serverSocket = new ServerSocket(port);
-	} catch(IOException e) {
-	    System.out.println("\nFatal Error: " + e.getMessage());
-	    return;
-	}
-		
-	while (true) {
-	    System.out.println("\nReady, Waiting for requests...\n");
-	    try {
-		Socket connectionSocket = serverSocket.accept();
-		InetAddress client = connectionSocket.getInetAddress();
-		System.out.println(client.getHostName() + " connected to server.\n");
+        try {
+            System.out.println("Trying to bind to localhost on port " + port);
+            serverSocket = new ServerSocket(port);
+        } catch(IOException e) {
+            System.out.println("\nFatal Error: " + e.getMessage());
+            return;
+        }
 
-		BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-		DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
-		httpHandler(input, output);
-	    } catch (Exception e) { 
-		System.out.println("\nError:" + e.getMessage());
-	    }
+        while (true) {
+            System.out.println("\nReady, Waiting for requests...\n");
+            try {
+                Socket connectionSocket = serverSocket.accept();
+                InetAddress client = connectionSocket.getInetAddress();
+                System.out.println(client.getHostName() + " connected to server.\n");
+
+                BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+                DataOutputStream output = new DataOutputStream(connectionSocket.getOutputStream());
+                httpHandler(input, output);
+            } catch (Exception e) { 
+                System.out.println("\nError:" + e.getMessage());
+            }
 	}
 
     }
 
     public void closeSocket() {
-	try {
-	    serverSocket.close();
-	} catch (IOException e) {
-	    System.out.println("Unable to close socket - please restart server.");
-	}
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            System.out.println("Unable to close socket - please restart server.");
+        }
     }
 
     private void httpHandler(BufferedReader input, DataOutputStream output) {
@@ -227,6 +227,7 @@ public class Server implements Runnable {
 		    t.stop(); //deprecated java method but works for our purposes
 		    s.closeSocket();
 		    run = false;
+            ports.clear();
 		} else {
 		    System.out.println("Invalid input. To stop server, enter 'stop'");
 		}

@@ -47,8 +47,8 @@ public class Requester implements Runnable{
 			in.close();
 			out.close();
 		} catch(IOException e) {
-			System.err.println("data received in unknown format");
-			e.printStackTrace();
+			System.err.println("Could not find server.");
+//			e.printStackTrace();
 		}
 	}
 
