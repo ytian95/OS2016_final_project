@@ -48,7 +48,6 @@ public class Requester implements Runnable{
 			out.close();
 		} catch(IOException e) {
 			System.err.println("Could not find server.");
-//			e.printStackTrace();
 		}
 	}
 
