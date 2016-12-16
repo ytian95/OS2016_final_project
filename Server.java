@@ -215,7 +215,10 @@ public class Server implements Runnable {
 		    System.out.println("Starting server");
 		    run = true;
 		    t.start();
-		} else {
+		} else if (input.equals("quit")) {
+            System.out.println("Goodbye");
+            return;
+        } else {
 		    System.out.println("Invalid input. To start server, enter 'start'");
 		}
 	    }
